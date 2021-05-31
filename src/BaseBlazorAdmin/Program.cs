@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,9 +19,16 @@ namespace BaseBlazorAdmin
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddHttpClient("ApiName", client =>
+            {
+                client.BaseAddress = new Uri("https://yourapi");
+            }).AddHttpMessageHandler<AuthroizationMessageHandler>();
+            builder.Services.AddTransient<AuthroizationMessageHandler>();
+
+            builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>().CreateClient("ApiName"));
 
             builder.Services.AddMudServices();
+            builder.Services.AddBlazoredLocalStorage();
 
             await builder.Build().RunAsync();
         }
